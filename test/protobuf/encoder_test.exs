@@ -288,7 +288,7 @@ defmodule Protobuf.EncoderTest do
     message = ~r/protocol Enumerable not implemented for (123|type Integer)/
 
     assert_raise Protobuf.EncodeError, message, fn ->
-      Encoder.encode(%TestMsg.Foo{e: 123})
+      Encoder.encode(%TestMsg.Foo{e: ~c'123'})
     end
 
     message = ~r/struct TestMsg.Foo.Baz can't be encoded as TestMsg.Foo.Bar/

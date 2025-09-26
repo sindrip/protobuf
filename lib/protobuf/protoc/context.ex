@@ -59,7 +59,7 @@ defmodule Protobuf.Protoc.Context do
         %__MODULE__{} = ctx,
         %Google.Protobuf.FileDescriptorProto{options: nil}
       ) do
-    %__MODULE__{ctx | custom_file_options: %{}}
+    %{ctx | custom_file_options: %{}}
   end
 
   def custom_file_options_from_file_desc(
@@ -70,7 +70,7 @@ defmodule Protobuf.Protoc.Context do
       Google.Protobuf.FileOptions.get_extension(options, Elixirpb.PbExtension, :file) ||
         %Elixirpb.FileOptions{}
 
-    %__MODULE__{
+    %{
       ctx
       | custom_file_options: custom_file_opts,
         module_prefix: Map.get(custom_file_opts, :module_prefix)
