@@ -56,8 +56,8 @@ defmodule Protobuf.Protoc.GeneratorIntegrationTest do
   end
 
   describe "custom options" do
-    # These fail the first time, when extensions are not loaded. Then, they start to pass.
-    @describetag :skip
+    # # These fail the first time, when extensions are not loaded. Then, they start to pass.
+    # @describetag :skip
 
     test "with enums" do
       descriptor = Test.EnumWithCustomOptions.descriptor()
