@@ -69,8 +69,15 @@ defmodule Protobuf.Mixfile do
     [
       main_module: Protobuf.Protoc.CLI,
       name: "protoc-gen-elixir",
-      emu_args: "-kernel standard_io_encoding latin1"
+      emu_args: emu_args()
     ]
+  end
+
+  defp emu_args() do
+    case :erlang.system_info(:otp_release) do
+      v when v in [~c"26", ~c"27"] -> "-kernel standard_io_encoding latin1"
+      _ -> ""
+    end
   end
 
   defp package do
