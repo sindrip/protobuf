@@ -43,7 +43,7 @@ defmodule Protobuf.Protoc.Generator.Message do
         nil
       end
 
-    ctx = %Context{ctx | namespace: new_ns}
+    ctx = %{ctx | namespace: new_ns}
     {nested_enums, nested_msgs} = Enum.unzip(gen_nested_msgs(ctx, desc))
 
     msg =

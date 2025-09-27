@@ -323,71 +323,74 @@ defmodule Protobuf.DSL do
     |> cal_encoded_fnum()
   end
 
-  defp parse_field_opts_to_field_props(%FieldProps{} = props, opts) do
-    Enum.reduce(opts, props, fn
+  defp parse_field_opts_to_field_props(%FieldProps{} = field_props, opts) do
+    Enum.reduce(opts, field_props, fn
       {:optional, optional?}, acc ->
-        %FieldProps{acc | optional?: optional?}
+        %{acc | optional?: optional?}
 
       {:proto3_optional, proto3_optional?}, acc ->
-        %FieldProps{acc | proto3_optional?: proto3_optional?}
+        %{acc | proto3_optional?: proto3_optional?}
 
       {:required, required?}, acc ->
-        %FieldProps{acc | required?: required?}
+        %{acc | required?: required?}
 
       {:enum, enum?}, acc ->
-        %FieldProps{acc | enum?: enum?}
+        %{acc | enum?: enum?}
 
       {:map, map?}, acc ->
-        %FieldProps{acc | map?: map?}
+        %{acc | map?: map?}
 
       {:repeated, repeated?}, acc ->
-        %FieldProps{acc | repeated?: repeated?}
+        %{acc | repeated?: repeated?}
 
       {:embedded, embedded}, acc ->
-        %FieldProps{acc | embedded?: embedded}
+        %{acc | embedded?: embedded}
 
       {:deprecated, deprecated?}, acc ->
-        %FieldProps{acc | deprecated?: deprecated?}
+        %{acc | deprecated?: deprecated?}
 
       {:packed, packed?}, acc ->
-        %FieldProps{acc | packed?: packed?}
+        %{acc | packed?: packed?}
 
       {:type, type}, acc ->
-        %FieldProps{acc | type: type}
+        %{acc | type: type}
 
       {:default, default}, acc ->
-        %FieldProps{acc | default: default}
+        %{acc | default: default}
 
       {:oneof, oneof}, acc ->
-        %FieldProps{acc | oneof: oneof}
+        %{acc | oneof: oneof}
 
       {:json_name, json_name}, acc ->
-        %FieldProps{acc | json_name: json_name}
+        %{acc | json_name: json_name}
     end)
   end
 
-  defp cal_label(%FieldProps{} = props, :proto3) do
-    if props.required? do
+  defp cal_label(%FieldProps{} = field_props, :proto3) do
+    if field_props.required? do
       raise Protobuf.InvalidError, message: "required can't be used in proto3"
     else
-      %FieldProps{props | optional?: true}
+      %{field_props | optional?: true}
     end
   end
 
   defp cal_label(props, _syntax), do: props
 
-  defp wrap_enum_type(%FieldProps{enum?: true, type: type} = props) do
-    %FieldProps{props | type: {:enum, type}, wire_type: Wire.wire_type({:enum, type})}
+  defp wrap_enum_type(%FieldProps{enum?: true, type: type} = field_props) do
+    %{field_props | type: {:enum, type}, wire_type: Wire.wire_type({:enum, type})}
   end
 
-  defp wrap_enum_type(%FieldProps{type: type} = props) do
-    %FieldProps{props | wire_type: Wire.wire_type(type)}
+  defp wrap_enum_type(%FieldProps{type: type} = field_props) do
+    %{field_props | wire_type: Wire.wire_type(type)}
   end
 
   # The compiler always emits a json name, but we omit it in the DSL when it
   # matches the name, to keep it uncluttered. Now we infer it back from name.
-  defp cal_json_name(%FieldProps{json_name: name} = props) when is_binary(name), do: props
-  defp cal_json_name(props), do: %FieldProps{props | json_name: props.name}
+  defp cal_json_name(%FieldProps{json_name: name} = field_props) when is_binary(name),
+    do: field_props
+
+  defp cal_json_name(%FieldProps{} = field_props),
+    do: %{field_props | json_name: field_props.name}
 
   defp verify_no_default_in_proto3(%FieldProps{} = props, syntax) do
     if syntax == :proto3 and not is_nil(props.default) do
@@ -397,19 +400,19 @@ defmodule Protobuf.DSL do
     end
   end
 
-  defp cal_embedded(%FieldProps{type: type, enum?: false} = props) when is_atom(type) do
+  defp cal_embedded(%FieldProps{type: type, enum?: false} = field_props) when is_atom(type) do
     case to_string(type) do
-      "Elixir." <> _ -> %FieldProps{props | embedded?: true}
-      _ -> props
+      "Elixir." <> _ -> %{field_props | embedded?: true}
+      _ -> field_props
     end
   end
 
   defp cal_embedded(props), do: props
 
-  defp cal_packed(%FieldProps{packed?: true, repeated?: repeated?} = props, _syntax) do
+  defp cal_packed(%FieldProps{packed?: true, repeated?: repeated?} = field_props, _syntax) do
     cond do
-      props.embedded? -> raise ":packed can't be used with :embedded field"
-      repeated? -> %FieldProps{props | packed?: true}
+      field_props.embedded? -> raise ":packed can't be used with :embedded field"
+      repeated? -> %{field_props | packed?: true}
       true -> raise ":packed must be used with :repeated"
     end
   end
@@ -418,28 +421,28 @@ defmodule Protobuf.DSL do
     props
   end
 
-  defp cal_packed(%FieldProps{type: type, repeated?: true} = props, :proto3) do
-    packed? = (props.enum? or not props.embedded?) and type_numeric?(type)
-    %FieldProps{props | packed?: packed?}
+  defp cal_packed(%FieldProps{type: type, repeated?: true} = field_props, :proto3) do
+    packed? = (field_props.enum? or not field_props.embedded?) and type_numeric?(type)
+    %{field_props | packed?: packed?}
   end
 
-  defp cal_packed(props, _syntax), do: %FieldProps{props | packed?: false}
+  defp cal_packed(%FieldProps{} = field_props, _syntax), do: %{field_props | packed?: false}
 
-  defp cal_repeated(%FieldProps{map?: true} = props), do: %FieldProps{props | repeated?: false}
+  defp cal_repeated(%FieldProps{map?: true} = field_props), do: %{field_props | repeated?: false}
 
   defp cal_repeated(%FieldProps{repeated?: true, oneof: oneof}) when not is_nil(oneof),
     do: raise(":oneof can't be used with repeated")
 
   defp cal_repeated(props), do: props
 
-  defp cal_encoded_fnum(%FieldProps{fnum: fnum, packed?: true} = props) do
+  defp cal_encoded_fnum(%FieldProps{fnum: fnum, packed?: true} = field_props) do
     encoded_fnum = Protobuf.Encoder.encode_fnum(fnum, Wire.wire_type(:bytes))
-    %FieldProps{props | encoded_fnum: encoded_fnum}
+    %{field_props | encoded_fnum: encoded_fnum}
   end
 
-  defp cal_encoded_fnum(%FieldProps{fnum: fnum, wire_type: wire_type} = props) do
+  defp cal_encoded_fnum(%FieldProps{fnum: fnum, wire_type: wire_type} = field_props) do
     encoded_fnum = Protobuf.Encoder.encode_fnum(fnum, wire_type)
-    %FieldProps{props | encoded_fnum: encoded_fnum}
+    %{field_props | encoded_fnum: encoded_fnum}
   end
 
   defp gen_defstruct(%MessageProps{} = message_props) do
