@@ -17,7 +17,7 @@ jobs:
           - otp: 27.0
             elixir: 1.18.1
             lint: true
-            coverage: true 
+            coverage: true
             integration: true
           - otp: 27.0
             elixir: 1.17.3
@@ -30,6 +30,7 @@ jobs:
       # Set locale to handle encoding issues in newer Elixir versions
       LC_ALL: C.UTF-8
       LANG: C.UTF-8
+      ERL_AFLAGS: "-kernel standard_io_encoding latin1"
 
     steps:
       - name: Checkout this repo
