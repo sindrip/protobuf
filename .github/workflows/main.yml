@@ -14,8 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - otp: 28.1
+            elixir: 1.19.0-rc.0
           - otp: 27.0
             elixir: 1.18.1
+            lint: true
+            coverage: true
+            integration: true
           - otp: 27.0
             elixir: 1.17.3
           - otp: 24.3
@@ -24,6 +29,9 @@ jobs:
     env:
       MIX_ENV: test
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Set locale to handle encoding issues in newer Elixir versions
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
 
     steps:
       - name: Checkout this repo
