@@ -283,9 +283,10 @@ defmodule Protobuf.EncoderTest do
       Encoder.encode(%TestMsg.Foo{c: 123})
     end
 
-    # For Elixir 1.18+ it's `type Integer`, before, it was just `123`
+    # For Elixir 1.18 it's `type Integer`, before, it was just `123`
+    # For Elixir 1.19.0-rc.0 it's `Integer`
     # TODO: fix once we require Elixir 1.18+
-    message = ~r/protocol Enumerable not implemented for (123|type Integer)/
+    message = ~r/protocol Enumerable not implemented for (123|type Integer|Integer)/
 
     assert_raise Protobuf.EncodeError, message, fn ->
       Encoder.encode(%TestMsg.Foo{e: 123})
