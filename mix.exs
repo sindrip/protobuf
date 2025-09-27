@@ -66,7 +66,11 @@ defmodule Protobuf.Mixfile do
   end
 
   defp escript do
-    [main_module: Protobuf.Protoc.CLI, name: "protoc-gen-elixir"]
+    [
+      main_module: Protobuf.Protoc.CLI,
+      name: "protoc-gen-elixir",
+      emu_args: "-kernel standard_io_encoding latin1"
+    ]
   end
 
   defp package do
