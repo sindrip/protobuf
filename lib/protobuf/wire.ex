@@ -72,12 +72,12 @@ defmodule Protobuf.Wire do
   def encode(type, value)
 
   def encode(:string, binary) when is_binary(binary) do
-    unless String.valid?(binary) do
+    if String.valid?(binary) do
+      encode_from_wire_type(wire_delimited(), binary)
+    else
       raise Protobuf.EncodeError,
         message: "invalid UTF-8 data for type string: #{inspect(binary)}"
     end
-
-    encode_from_wire_type(wire_delimited(), binary)
   end
 
   def encode(:bytes, binary) when is_binary(binary),
@@ -143,12 +143,12 @@ defmodule Protobuf.Wire do
   def decode(type, value)
 
   def decode(:string, binary) when is_binary(binary) do
-    unless String.valid?(binary) do
+    if String.valid?(binary) do
+      binary
+    else
       raise Protobuf.DecodeError,
         message: "invalid UTF-8 data for type string: #{inspect(binary)}"
     end
-
-    binary
   end
 
   def decode(:bytes, binary) when is_binary(binary), do: binary

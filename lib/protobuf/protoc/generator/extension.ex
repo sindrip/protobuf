@@ -87,7 +87,7 @@ defmodule Protobuf.Protoc.Generator.Extension do
     |> Enum.flat_map(fn {desc, index} ->
       generate_module(Context.append_comment_path(ctx, "7.#{index}"), use_options, desc) ++
         get_extensions_from_messages(
-          %Context{
+          %{
             Context.append_comment_path(ctx, "6.#{index}")
             | namespace: ctx.namespace ++ [Macro.camelize(desc.name)]
           },
